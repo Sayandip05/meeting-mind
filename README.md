@@ -1,8 +1,8 @@
-# Meeting Intelligence System
+# Meeting Mind
 
-**Why do meetings waste 4 hours daily instead of summaries?**
+**Stop wasting 4 hours daily in back-to-back meetings — get AI-powered summaries optimized for Indian accents**
 
-Corporate employees spend half their workday in back-to-back status meetings, planning discussions, and review calls that could be replaced by brief written updates if they had AI-powered real-time meeting transcription and summarization tools optimized to understand Indian accents and business context.
+Corporate employees spend half their workday in status meetings, planning discussions, and review calls that could be replaced by brief written updates. Meeting Mind transforms recordings into searchable knowledge with AI agents that actually understand Indian business context.
 
 ---
 
@@ -77,6 +77,7 @@ Transform meetings from time-wasters into searchable knowledge. This is a produc
 | Transcription | OpenAI Whisper (Indian accent optimized) |
 | Embeddings | SentenceTransformers |
 | LLM | Groq (via LangChain) |
+| Evaluation | RAG metrics (Precision@K, Faithfulness, Hallucination detection) |
 
 ### Frontend
 | Component | Technology |
@@ -152,12 +153,22 @@ Meeting_Intelligence_System/
 │   │   │   ├── meeting.py
 │   │   │   └── chat.py
 │   │   │
-│   │   └── agents/                 # LangGraph Agents
+│   │   ├── agents/                 # LangGraph Agents
+│   │   │   ├── __init__.py
+│   │   │   ├── base_agent.py
+│   │   │   ├── transcription_agent.py
+│   │   │   ├── chunking_agent.py
+│   │   │   ├── embedding_agent.py
+│   │   │   ├── highlights_agent.py
+│   │   │   ├── chat_agent.py
+│   │   │   ├── summarization_agent.py
+│   │   │   ├── action_items_agent.py
+│   │   │   └── orchestrator.py
+│   │   │
+│   │   └── evaluation/             # RAG Evaluation
 │   │       ├── __init__.py
-│   │       ├── transcription_agent.py
-│   │       ├── summarization_agent.py
-│   │       ├── highlights_agent.py
-│   │       └── chat_agent.py
+│   │       ├── rag_evaluator.py
+│   │       └── metrics.py
 │   │
 │   ├── tests/                      # pytest tests
 │   │   ├── __init__.py
@@ -335,9 +346,10 @@ meetings_{meeting_id}  # Per-meeting vector collection
 - [ ] Speaker diarization
 
 ### Phase 4: Production
-- [ ] Docker + Docker Compose
-- [ ] pytest test suite
-- [ ] Super admin dashboard
+- [x] Docker + Docker Compose
+- [x] pytest test suite
+- [x] Super admin dashboard
+- [x] RAG Evaluation framework
 - [ ] PostgreSQL migration path
 - [ ] CI/CD pipeline
 
@@ -417,7 +429,84 @@ pytest tests/test_auth.py -v
 
 ---
 
-## Resume Description (Updated)
+## RAG Evaluation
 
-> Architected and built a production-grade Meeting Intelligence System using modular monolith architecture, featuring LangGraph-powered AI agents, Qdrant vector database, React TypeScript frontend, and Docker containerization. Reduced corporate meeting overhead by transforming recordings into searchable knowledge with Indian accent-optimized transcription and intelligent summarization.
+Evaluate your RAG system with comprehensive metrics:
+
+```python
+from app.evaluation import RAGEvaluator, EvaluationDataset
+
+evaluator = RAGEvaluator()
+dataset = EvaluationDataset()
+
+# Add test samples
+dataset.add_sample(
+    question="What were the main decisions?",
+    ground_truth="Migrate to new DB by Q2",
+    relevant_chunks=["decision: migrate DB", "timeline: Q2"]
+)
+
+# Run evaluation
+results = evaluator.run_full_evaluation(meeting_id=123, dataset=dataset)
+```
+
+### Metrics Tracked
+
+| Category | Metrics |
+|----------|---------|
+| **Retrieval** | Precision@K, Recall@K, MRR, NDCG |
+| **Generation** | Faithfulness, Answer Relevance, Hallucination Score |
+| **Performance** | Latency, Success Rate |
+
+### API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/v1/evaluation/run/{meeting_id}` | Run full evaluation |
+| `GET /api/v1/evaluation/benchmark` | Get benchmark targets |
+| `GET /api/v1/evaluation/report/{meeting_id}` | Generate report |
+
+---
+
+## Quick Start
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/Sayandip05/meeting-mind.git
+cd meeting-mind
+
+# 2. Set environment variables
+cp .env.example .env
+# Edit .env with your GROQ_API_KEY, LANGSMITH_API_KEY
+
+# 3. Start with Docker
+docker-compose up -d
+
+# 4. Access the app
+# Frontend: http://localhost:3000
+# API Docs: http://localhost:8000/docs
+```
+
+---
+
+## Project Status
+
+✅ **Completed:**
+- Multi-agent architecture (7 specialized agents)
+- JWT authentication with super admin dashboard
+- React + TypeScript frontend
+- RAG evaluation framework
+- Docker containerization
+- LangSmith tracing
+
+🚧 **In Progress:**
+- PostgreSQL migration
+- Real-time streaming
+- Speaker diarization
+
+---
+
+## Resume Description
+
+> Architected and built Meeting Mind, a production-grade AI system using modular monolith architecture with 7 LangGraph agents, RAG evaluation framework, Qdrant vector database, React TypeScript frontend, and Docker containerization. Transforms meeting recordings into searchable knowledge with Indian accent-optimized transcription and comprehensive evaluation metrics.
 
