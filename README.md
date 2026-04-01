@@ -1,287 +1,423 @@
 # Meeting Intelligence System
 
-Turn meetings into searchable knowledge with AI-powered transcription, highlights, and chat.
+**Why do meetings waste 4 hours daily instead of summaries?**
+
+Corporate employees spend half their workday in back-to-back status meetings, planning discussions, and review calls that could be replaced by brief written updates if they had AI-powered real-time meeting transcription and summarization tools optimized to understand Indian accents and business context.
 
 ---
 
-## Overview
+## Vision
 
-The **Meeting Intelligence System** is an end-to-end AI application that converts meeting recordings into structured insights. It allows users to upload or record meetings, automatically transcribe them, generate highlights, and ask questions about the meeting content using an intelligent chat assistant.
+Transform meetings from time-wasters into searchable knowledge. This is a production-grade AI application that converts meeting recordings into structured insights, replacing endless status meetings with intelligent summaries and on-demand Q&A.
 
-This project demonstrates a production-style architecture using modern LLM pipelines, vector databases, and retrieval-augmented generation.
-<p align="center">
-  <img src="assets/Screenshot 2026-02-12 223029.png" width="900">
-</p>
+---
 
-<p align="center"><b>Meeting Intelligence Dashboard</b></p>
+## Architecture Overview
 
+### Target Architecture: Modular Monolith (Layered)
 
-## Features
-
-### Core Features
-
-* Upload or record meeting audio/video
-* Automatic speech-to-text transcription
-* Semantic chunking of transcript
-* Vector embeddings storage
-* Meeting highlights generation
-* Conversational Q&A over meetings
-* Multi-meeting support with session switching
-
-### Advanced Features
-
-* Meeting-specific vector databases
-* Conversational memory for chat
-* Highlight extraction agent
-* Structured retrieval queries
-* Download highlights (PDF / TXT / DOCX)
-* Meeting history panel
-* Active meeting indicator
-* Recording timer
-* Modal UI inputs
-* Multi-language chat responses
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        PRESENTATION LAYER                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │ Landing Page │  │  Auth Pages  │  │   React Dashboard    │   │
+│  │   (Next.js)  │  │ (SignUp/In)  │  │  (TypeScript/React)  │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                         API GATEWAY LAYER                        │
+│                    FastAPI - Modular Routers                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐ │
+│  │  Auth    │ │ Meetings │ │  Chat    │ │ Highlights│ │ Admin  │ │
+│  │  Router  │ │  Router  │ │  Router  │ │  Router   │ │ Router │ │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                        SERVICE LAYER                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │Auth Service  │  │Meeting Svc   │  │  AI Agent Service    │   │
+│  │(JWT/SQLite)  │  │(Orchestration)│  │ (LangGraph + LangSmith)│  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                      REPOSITORY LAYER                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │  User Repo   │  │ Meeting Repo │  │   Vector Store Repo  │   │
+│  │  (SQLite)    │  │  (SQLite)    │  │    (Qdrant Docker)   │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                     INFRASTRUCTURE LAYER                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │   Whisper    │  │SentenceTrans │  │     Groq LLM         │   │
+│  │(Indian Accent│  │  (Embeddings)│  │  (via LangChain)     │   │
+│  │  Optimized)  │  │              │  │                      │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Tech Stack
 
-**Backend**
+### Backend (Python)
+| Component | Technology |
+|-----------|------------|
+| Framework | FastAPI |
+| Database | SQLite (dev) → PostgreSQL (prod) |
+| Vector DB | Qdrant (Docker) |
+| AI Orchestration | LangGraph |
+| Tracing | LangSmith |
+| Auth | JWT + bcrypt |
+| Testing | pytest |
+| Transcription | OpenAI Whisper (Indian accent optimized) |
+| Embeddings | SentenceTransformers |
+| LLM | Groq (via LangChain) |
 
-* Python
-* FastAPI
-* LangChain
-* Groq LLM
-* Whisper
-* SentenceTransformers
-* Chroma Vector DB
+### Frontend
+| Component | Technology |
+|-----------|------------|
+| Landing Page | Next.js / React |
+| Dashboard | React + TypeScript |
+| Styling | Tailwind CSS |
+| State Management | React Query / Zustand |
+| Auth | JWT stored in httpOnly cookies |
 
-**Frontend**
-
-* HTML
-* CSS
-* JavaScript (Vanilla)
-
-**Processing Pipeline**
-
-```
-Video → Audio → Transcript → Chunks → Embeddings → Vector DB → Retrieval → LLM
-```
+### DevOps
+| Component | Technology |
+|-----------|------------|
+| Containerization | Docker + Docker Compose |
+| CI/CD | GitHub Actions |
+| Monitoring | LangSmith tracing |
 
 ---
 
-## Project Structure
+## Project Structure (Target)
 
 ```
-Project Structure
------------------
-
-MEETING CHANGER/
+Meeting_Intelligence_System/
 │
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
 │
-├── data/
-│   ├── intermediate/
-│   └── vectordb/
+├── docker/
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
 │
-├── Frontend/
-│   ├── index.html
-│   ├── script.js
-│   └── style.css
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                 # FastAPI app entry
+│   │   ├── config.py               # Settings & env vars
+│   │   │
+│   │   ├── api/                    # API Layer (Routers)
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py             # Auth endpoints
+│   │   │   ├── meetings.py         # Meeting CRUD
+│   │   │   ├── chat.py             # Chat endpoints
+│   │   │   ├── highlights.py       # Highlights endpoints
+│   │   │   └── admin.py            # Super admin endpoints
+│   │   │
+│   │   ├── core/                   # Core Layer
+│   │   │   ├── __init__.py
+│   │   │   ├── security.py         # JWT, password hashing
+│   │   │   └── exceptions.py       # Custom exceptions
+│   │   │
+│   │   ├── services/               # Service Layer
+│   │   │   ├── __init__.py
+│   │   │   ├── auth_service.py
+│   │   │   ├── meeting_service.py
+│   │   │   └── ai_agent_service.py # LangGraph agents
+│   │   │
+│   │   ├── repositories/           # Repository Layer
+│   │   │   ├── __init__.py
+│   │   │   ├── user_repository.py
+│   │   │   ├── meeting_repository.py
+│   │   │   └── vector_repository.py
+│   │   │
+│   │   ├── models/                 # Database Models
+│   │   │   ├── __init__.py
+│   │   │   ├── user.py
+│   │   │   └── meeting.py
+│   │   │
+│   │   ├── schemas/                # Pydantic Schemas
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py
+│   │   │   ├── meeting.py
+│   │   │   └── chat.py
+│   │   │
+│   │   └── agents/                 # LangGraph Agents
+│   │       ├── __init__.py
+│   │       ├── transcription_agent.py
+│   │       ├── summarization_agent.py
+│   │       ├── highlights_agent.py
+│   │       └── chat_agent.py
+│   │
+│   ├── tests/                      # pytest tests
+│   │   ├── __init__.py
+│   │   ├── test_auth.py
+│   │   ├── test_meetings.py
+│   │   └── conftest.py
+│   │
+│   ├── alembic/                    # Database migrations
+│   ├── uploads/                    # Meeting uploads
+│   ├── data/                       # SQLite data
+│   ├── requirements.txt
+│   └── pytest.ini
 │
-├── Notes/
-│     Note:
-         - vectordb stores embeddings per meeting
-         - uploads stores user recordings
-         - intermediate stores temporary processing files
-
-├── src/
-│   ├── audio_to_text.py
-│   ├── chat.py
-│   ├── chunk_text.py
-│   ├── embed_store.py
-│   ├── highlights.py
-│   ├── pipeline.py
-│   ├── recorder.py
-│   ├── services.py
-│   └── video_to_audio.py
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── auth/               # Login, Signup forms
+│   │   │   ├── dashboard/          # Main dashboard
+│   │   │   ├── meeting/            # Meeting view
+│   │   │   └── admin/              # Super admin dashboard
+│   │   ├── pages/
+│   │   │   ├── landing.tsx
+│   │   │   ├── login.tsx
+│   │   │   ├── signup.tsx
+│   │   │   ├── dashboard.tsx
+│   │   │   └── admin.tsx
+│   │   ├── hooks/
+│   │   ├── services/               # API clients
+│   │   ├── store/                  # State management
+│   │   └── types/                  # TypeScript types
+│   ├── package.json
+│   └── tsconfig.json
 │
-├── uploads/
-├── venv/
-├── .env
+├── qdrant_data/                    # Qdrant persistence
+├── .env.example
 ├── .gitignore
-├── main.py
-├── README.md
-└── requirements.txt
-
-
-## Installation
-
-### 1. Clone Repository
-
-```
-git clone <repo_url>
-cd project
+└── README.md
 ```
 
-### 2. Create Virtual Environment
+---
+
+## User Flows
+
+### 1. Landing → Authentication → Dashboard
 
 ```
-python -m venv venv
-source venv/bin/activate
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Landing   │────▶│   Sign Up   │────▶│   Sign In   │────▶│  Dashboard  │
+│    Page     │     │   (Form)    │     │   (Form)    │     │  (React UI) │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-### 3. Install Dependencies
+### 2. Meeting Lifecycle
 
 ```
-pip install -r requirements.txt
+Upload/Record ──▶ Transcribe ──▶ Chunk & Embed ──▶ Store in Qdrant
+                                              │
+                                              ▼
+Ask Questions ◀── Chat Agent ◀── Retrieve ◀───┘
+                                              │
+Generate Summary ◀── Highlights Agent ◀───────┘
 ```
 
-### 4. Add Environment Variables
-
-Create `.env`
+### 3. Super Admin Flow
 
 ```
+Admin Dashboard:
+├── View all users
+├── View all meetings
+├── System analytics
+├── Manage settings
+└── View LangSmith traces
+```
+
+---
+
+## Database Schema (SQLite → PostgreSQL)
+
+### Users Table
+```sql
+users:
+- id (PK)
+- email (unique)
+- hashed_password
+- full_name
+- is_active
+- is_superadmin
+- created_at
+- updated_at
+```
+
+### Meetings Table
+```sql
+meetings:
+- id (PK)
+- user_id (FK)
+- name
+- original_filename
+- audio_path
+- transcript_path
+- status (uploaded/processing/completed/failed)
+- created_at
+- updated_at
+```
+
+### Qdrant Collections
+```
+meetings_{meeting_id}  # Per-meeting vector collection
+```
+
+---
+
+## AI Agent Architecture (LangGraph)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    TRANSCRIPTION AGENT                       │
+│  Input: Audio → Whisper (Indian accent optimized) → Text    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    CHUNKING AGENT                            │
+│  Input: Text → Semantic chunking → Chunks                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    EMBEDDING AGENT                           │
+│  Input: Chunks → SentenceTransformers → Embeddings          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    STORAGE AGENT                             │
+│  Input: Embeddings → Qdrant (per-meeting collection)        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌─────────────────────────┐     ┌─────────────────────────────┐
+│   HIGHLIGHTS AGENT      │     │      CHAT AGENT             │
+│  (LangGraph Workflow)   │     │   (LangGraph + Memory)      │
+│                         │     │                             │
+│  1. Multi-query retrieval│     │  1. Receive question        │
+│  2. Deduplicate chunks   │     │  2. Retrieve context        │
+│  3. Groq summarization   │     │  3. Groq generate answer    │
+│  4. Format highlights    │     │  4. Update memory           │
+└─────────────────────────┘     └─────────────────────────────┘
+```
+
+---
+
+## Key Features
+
+### Phase 1: Foundation
+- [ ] Modular monolith architecture (layered)
+- [ ] User authentication (JWT, SQLite)
+- [ ] Landing page + Auth pages
+- [ ] React TypeScript dashboard
+- [ ] File upload/record meetings
+
+### Phase 2: AI Pipeline
+- [ ] Whisper transcription (Indian accent optimization)
+- [ ] Semantic chunking
+- [ ] Qdrant vector storage (Docker)
+- [ ] LangGraph agent orchestration
+- [ ] LangSmith tracing
+
+### Phase 3: Intelligence
+- [ ] Highlights generation agent
+- [ ] Conversational Q&A with memory
+- [ ] Real-time transcription streaming
+- [ ] Speaker diarization
+
+### Phase 4: Production
+- [ ] Docker + Docker Compose
+- [ ] pytest test suite
+- [ ] Super admin dashboard
+- [ ] PostgreSQL migration path
+- [ ] CI/CD pipeline
+
+---
+
+## Environment Variables
+
+```bash
+# Backend
+DATABASE_URL=sqlite:///./data/app.db
+QDRANT_HOST=localhost
+QDRANT_PORT=6333
 GROQ_API_KEY=your_key_here
+LANGSMITH_API_KEY=your_key_here
+LANGSMITH_PROJECT=meeting-intelligence
+JWT_SECRET=your_secret_here
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ---
 
-## Running the Application
+## Running with Docker
 
-Start backend server:
+```bash
+# Start all services
+docker-compose up -d
 
-```
-uvicorn main:app --reload
-```
-
-Open frontend:
-
-```
-Frontend/index.html
+# Services:
+# - Backend: http://localhost:8000
+# - Frontend: http://localhost:3000
+# - Qdrant: http://localhost:6333
 ```
 
 ---
 
-## How It Works
+## Testing
 
-### Upload Flow
+```bash
+# Run all tests
+pytest
 
-1. User uploads meeting
-2. Backend extracts audio
-3. Whisper generates transcript
-4. Text is chunked
-5. Embeddings created
-6. Stored in Chroma DB
+# Run with coverage
+pytest --cov=app tests/
 
----
-
-### Highlights Flow
-
-1. Retriever fetches important chunks
-2. LLM analyzes context
-3. Extracts key insights
-4. Saves notes file
-
----
-
-### Chat Flow
-
-1. User asks question
-2. Retriever finds relevant chunks
-3. LLM answers using context only
-4. Memory stores recent conversation
-
----
-
-## API Endpoints
-
-### Upload Meeting
-
-```
-POST /upload
-```
-
-### Generate Highlights
-
-```
-GET /notes?meeting_id=xxx
-```
-
-### Ask Question
-
-```
-POST /chat
+# Run specific test file
+pytest tests/test_auth.py -v
 ```
 
 ---
 
-## Highlight Extraction Logic
+## Indian Accent Optimization Strategy
 
-Highlights agent:
-
-* runs multi-query retrieval
-* selects best chunks
-* removes duplicates
-* sends optimized context to LLM
-* formats concise highlights
+1. **Whisper Fine-tuning**: Use Whisper models with Indian English training data
+2. **Post-processing**: Domain-specific vocabulary correction
+3. **Context Enhancement**: Business terminology injection
+4. **Fallback**: Manual transcript editing capability
 
 ---
 
-## Chat Intelligence Logic
+## Migration from Current State
 
-Chat agent:
+### Current → Target
 
-* uses Conversational Retrieval Chain
-* maintains short-term memory
-* prevents hallucination
-* answers only from transcript
-
----
-
-## UI Design Principles
-
-* Clean dashboard layout
-* Real-time feedback indicators
-* Clear hierarchy
-* Sticky chat input
-* Interactive hover effects
-* Structured highlight display
+| Current | Target |
+|---------|--------|
+| Flat structure | Layered modular monolith |
+| Vanilla JS frontend | React + TypeScript |
+| No auth | JWT-based auth |
+| Chroma DB | Qdrant (Docker) |
+| LangChain | LangGraph + LangSmith |
+| No tests | pytest suite |
+| No Docker | Full containerization |
 
 ---
 
-## Performance Optimizations
+## Resume Description (Updated)
 
-* embeddings loaded once
-* LLM initialized once
-* meeting-specific vector DB
-* limited retrieval context
-* deduplicated chunks
-
----
-
-## Security Considerations
-
-* Meeting isolation via meeting_id
-* No cross-meeting data access
-* Context-restricted answering
-* Environment-based API keys
-
----
-
-## Future Improvements
-
-* Speaker diarization
-* Live transcription streaming
-* Role-based highlights
-* Meeting analytics dashboard
-* Sentiment analysis
-* Action item auto-assignment
-
----
-
-## Resume Description
-
-> Built an AI-powered Meeting Intelligence System that converts recordings into searchable knowledge using Whisper, LangChain, ChromaDB, and Groq LLM, featuring semantic retrieval chat, automated highlights, and production-style architecture.
+> Architected and built a production-grade Meeting Intelligence System using modular monolith architecture, featuring LangGraph-powered AI agents, Qdrant vector database, React TypeScript frontend, and Docker containerization. Reduced corporate meeting overhead by transforming recordings into searchable knowledge with Indian accent-optimized transcription and intelligent summarization.
 
